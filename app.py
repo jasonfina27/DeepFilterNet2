@@ -21,6 +21,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model, df, _ = init_df("./DeepFilterNet2", config_allow_defaults=True)
 model = model.to(device=device).eval()
 
+fig_noisy: plt.Figure
+fig_enh: plt.Figure
+ax_noisy: plt.Axes
+ax_enh: plt.Axes
 fig_noisy, ax_noisy = plt.subplots(figsize=(15.2, 5))
 fig_noisy.set_tight_layout(True)
 fig_enh, ax_enh = plt.subplots(figsize=(15.2, 5))
@@ -124,15 +128,17 @@ def demo_fn(
     lim = torch.linspace(0.0, 1.0, int(sr * 0.15)).unsqueeze(0)
     lim = torch.cat((lim, torch.ones(1, enhanced.shape[1] - lim.shape[1])), dim=1)
     enhanced = enhanced * lim
-    # if meta.sample_rate != sr:
-    #     enhanced = resample(enhanced, sr, meta.sample_rate)
-    #     noisy = resample(noisy, sr, meta.sample_rate)
-    #     sr = meta.sample_rate
+    if meta.sample_rate != sr:
+        enhanced = resample(enhanced, sr, meta.sample_rate)
+        sample = resample(sample, sr, meta.sample_rate)
+        sr = meta.sample_rate
     noisy_fn = tempfile.NamedTemporaryFile(suffix="noisy.wav", delete=False).name
     save_audio(noisy_fn, sample, sr)
     enhanced_fn = tempfile.NamedTemporaryFile(suffix="enhanced.wav", delete=False).name
     save_audio(enhanced_fn, enhanced, sr)
     logger.info(f"saved audios: {noisy_fn}, {enhanced_fn}")
+    ax_noisy.clear()
+    ax_enh.clear()
     return (
         noisy_fn,
         spec_figure(sample, sr=sr, figure=fig_noisy, ax=ax_noisy),

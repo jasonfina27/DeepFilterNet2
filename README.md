@@ -1,5 +1,5 @@
 ---
-title: DeepFilterNet
+title: DeepFilterNet2
 emoji: 💩
 colorFrom: gray
 colorTo: red
