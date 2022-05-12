@@ -21,6 +21,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model, df, _ = init_df("./DeepFilterNet2", config_allow_defaults=True)
 model = model.to(device=device).eval()
 
+fig_noisy, ax_noisy = plt.subplots(figsize=(15.2, 5))
+fig_noisy.set_tight_layout(True)
+fig_enh, ax_enh = plt.subplots(figsize=(15.2, 5))
+fig_enh.set_tight_layout(True)
+
 NOISES = {
     "None": None,
     "Kitchen": "samples/dkitchen.wav",
@@ -130,9 +135,9 @@ def demo_fn(
     logger.info(f"saved audios: {noisy_fn}, {enhanced_fn}")
     return (
         noisy_fn,
-        spec_figure(sample, sr=sr),
+        spec_figure(sample, sr=sr, figure=fig_noisy, ax=ax_noisy),
         enhanced_fn,
-        spec_figure(enhanced, sr=sr),
+        spec_figure(enhanced, sr=sr, figure=fig_enh, ax=ax_enh),
     )
 
 
@@ -260,10 +265,10 @@ inputs = [
     ),
 ]
 outputs = [
-    gradio.outputs.Audio(label="Noisy"),
-    gradio.outputs.Image(type="plot"),
-    gradio.outputs.Audio(label="Enhanced"),
-    gradio.outputs.Image(type="plot"),
+    gradio.outputs.Audio(label="Noisy audio"),
+    gradio.outputs.Image(type="plot", label="Noisy spectrogram"),
+    gradio.outputs.Audio(label="Enhanced audio"),
+    gradio.outputs.Image(type="plot", label="Enhanced spectrogram"),
 ]
 description = "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
 iface = gradio.Interface(
