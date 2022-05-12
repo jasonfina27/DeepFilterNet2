@@ -18,7 +18,7 @@ from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import resample
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model, df, _ = init_df(config_allow_defaults=True)
+model, df, _ = init_df("./DeepFilterNet2", config_allow_defaults=True)
 model = model.to(device=device).eval()
 
 NOISES = {
