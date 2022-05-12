@@ -1,0 +1,6 @@
+torch
+torchaudio
+deepfilternet==0.2.0
+matplotlib
+markdown
+gradio

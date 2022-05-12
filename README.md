@@ -1,10 +1,9 @@
 ---
-title: DeepFilterNet2
-emoji: 🐠
+title: DeepFilterNet
+emoji: 💩
 colorFrom: gray
-colorTo: purple
+colorTo: red
 sdk: gradio
-sdk_version: 2.9.4
 app_file: app.py
 pinned: false
 license: apache-2.0
