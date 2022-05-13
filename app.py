@@ -117,6 +117,9 @@ def demo_fn(
         assert tmp is not None
         sample, meta = tmp
     sample = sample[..., : 10 * meta.sample_rate]  # limit to 10 seconds
+    if sample.dim() > 1 and sample.shape[0] > 1:
+        assert sample.shape[1] > sample.shape[2], f"Expecting channels first, but got {sample.shape}"
+        sample = sample.mean(dim=0, keepdim=True)
     logger.info(f"Loaded sample with shape {sample.shape}")
     if noise_fn is not None:
         noise, _ = load_audio(noise_fn, sr)  # type: ignore
