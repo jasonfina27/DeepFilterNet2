@@ -124,7 +124,7 @@ def demo_fn(
         sample = sample[..., : max_s * sr]
     if sample.dim() > 1 and sample.shape[0] > 1:
         assert (
-            sample.shape[1] > sample.shape[2]
+            sample.shape[1] > sample.shape[0]
         ), f"Expecting channels first, but got {sample.shape}"
         sample = sample.mean(dim=0, keepdim=True)
     logger.info(f"Loaded sample with shape {sample.shape}")
