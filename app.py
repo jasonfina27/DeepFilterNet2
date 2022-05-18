@@ -108,15 +108,20 @@ def demo_fn(
     )
     noise_fn = NOISES[noise_type]
     meta = AudioMetaData(-1, -1, -1, -1, "")
+    max_s = 10  # limit to 10 seconds
     if speech_rec is None and speech_upl is None:
         sample, meta = load_audio("samples/p232_013_clean.wav", sr)
     elif speech_upl is not None:
         sample, meta = load_audio(speech_upl, sr)
+        max_len = max_s * sr
+        if sample.shape[-1] > max_len:
+            start = torch.randint(0, sample.shape[-1] - max_len, ()).item()
+            sample = sample[..., start : start + max_len]
     else:
         tmp = load_audio_gradio(speech_rec, sr)
         assert tmp is not None
         sample, meta = tmp
-    sample = sample[..., : 10 * meta.sample_rate]  # limit to 10 seconds
+        sample = sample[..., : max_s * sr]
     if sample.dim() > 1 and sample.shape[0] > 1:
         assert (
             sample.shape[1] > sample.shape[2]
