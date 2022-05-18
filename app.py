@@ -58,7 +58,7 @@ def mix_at_snr(clean, noise, snr, eps=1e-10):
     if noise.shape[1] < clean.shape[1]:
         noise = noise.repeat((1, int(math.ceil(clean.shape[1] / noise.shape[1]))))
     max_start = int(noise.shape[1] - clean.shape[1])
-    start = torch.randint(0, max_start, ()).item()
+    start = torch.randint(0, max_start, ()).item() if max_start > 0 else 0
     logger.debug(f"start: {start}, {clean.shape}")
     noise = noise[:, start : start + clean.shape[1]]
     E_speech = torch.mean(clean.pow(2)) + eps
@@ -118,7 +118,9 @@ def demo_fn(
         sample, meta = tmp
     sample = sample[..., : 10 * meta.sample_rate]  # limit to 10 seconds
     if sample.dim() > 1 and sample.shape[0] > 1:
-        assert sample.shape[1] > sample.shape[2], f"Expecting channels first, but got {sample.shape}"
+        assert (
+            sample.shape[1] > sample.shape[2]
+        ), f"Expecting channels first, but got {sample.shape}"
         sample = sample.mean(dim=0, keepdim=True)
     logger.info(f"Loaded sample with shape {sample.shape}")
     if noise_fn is not None:
@@ -254,13 +256,11 @@ inputs = [
         label="Record your own voice",
         source="microphone",
         type="numpy",
-        optional=True,
     ),
     gradio.inputs.Audio(
         label="Alternative: Upload audio sample",
         source="upload",
         type="filepath",
-        optional=True,
     ),
     gradio.inputs.Dropdown(
         label="Add background noise",
@@ -286,8 +286,7 @@ iface = gradio.Interface(
     inputs=inputs,
     outputs=outputs,
     description=description,
-    layout="horizontal",
     allow_flagging="never",
     article=markdown.markdown(open("usage.md").read()),
 )
-iface.launch(cache_examples=False, debug=True)
+iface.launch(debug=True)

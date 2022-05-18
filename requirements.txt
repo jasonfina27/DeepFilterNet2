@@ -3,4 +3,4 @@ torchaudio
 deepfilternet==0.2.3
 matplotlib
 markdown
-gradio
+gradio>=3.0
