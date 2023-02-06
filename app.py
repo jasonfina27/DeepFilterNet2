@@ -15,7 +15,7 @@ from torchaudio.backend.common import AudioMetaData
 
 from df import config
 from df.enhance import enhance, init_df, load_audio, save_audio
-from df.utils import resample
+from df.io import resample
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model, df, _ = init_df("./DeepFilterNet2", config_allow_defaults=True)
@@ -99,28 +99,21 @@ def load_audio_gradio(
     return audio, meta
 
 
-def demo_fn(
-    speech_rec: Union[str, Tuple[int, np.ndarray]], speech_upl: str, noise_type: str, snr: int
-):
+def demo_fn(speech_upl: str, noise_type: str, snr: int):
     sr = config("sr", 48000, int, section="df")
-    logger.info(
-        f"Got parameters speech_rec: {speech_rec}, speech_upl: {speech_upl}, noise: {noise_type}"
-    )
+    logger.info(f"Got parameters speech_upl: {speech_upl}, noise: {noise_type}, snr: {snr}")
+    snr = int(snr)
     noise_fn = NOISES[noise_type]
     meta = AudioMetaData(-1, -1, -1, -1, "")
     max_s = 10  # limit to 10 seconds
-    if speech_rec is None and speech_upl is None:
-        sample, meta = load_audio("samples/p232_013_clean.wav", sr)
-    elif speech_upl is not None:
+    if speech_upl is not None:
         sample, meta = load_audio(speech_upl, sr)
         max_len = max_s * sr
         if sample.shape[-1] > max_len:
             start = torch.randint(0, sample.shape[-1] - max_len, ()).item()
             sample = sample[..., start : start + max_len]
     else:
-        tmp = load_audio_gradio(speech_rec, sr)
-        assert tmp is not None
-        sample, meta = tmp
+        sample, meta = load_audio("samples/p232_013_clean.wav", sr)
         sample = sample[..., : max_s * sr]
     if sample.dim() > 1 and sample.shape[0] > 1:
         assert (
@@ -274,15 +267,15 @@ inputs = [
     ),
     gradio.inputs.Dropdown(
         label="Noise Level (SNR)",
-        choices=[-5, 0, 10, 20],
-        default=10,
+        choices=["-5", "0", "10", "20"],
+        default="10",
     ),
 ]
 outputs = [
-    gradio.outputs.Audio(label="Noisy audio"),
-    gradio.outputs.Image(type="plot", label="Noisy spectrogram"),
-    gradio.outputs.Audio(label="Enhanced audio"),
-    gradio.outputs.Image(type="plot", label="Enhanced spectrogram"),
+    gradio.Audio(type="filepath", label="Noisy audio"),
+    gradio.Plot(label="Noisy spectrogram"),
+    gradio.Audio(type="filepath", label="Enhanced audio"),
+    gradio.Plot(label="Enhanced spectrogram"),
 ]
 description = "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
 iface = gradio.Interface(
