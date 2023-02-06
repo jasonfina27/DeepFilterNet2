@@ -257,13 +257,13 @@ def spec_figure(
 
 
 inputs = [
+    # gradio.inputs.Audio(
+    #     label="Record your own voice",
+    #     source="microphone",
+    #     type="numpy",
+    # ),
     gradio.inputs.Audio(
-        label="Record your own voice",
-        source="microphone",
-        type="numpy",
-    ),
-    gradio.inputs.Audio(
-        label="Alternative: Upload audio sample",
+        label="Upload audio sample",
         source="upload",
         type="filepath",
     ),
