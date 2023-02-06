@@ -8,6 +8,7 @@ import gradio.outputs
 import markdown
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 import torch
 from loguru import logger
 from torch import Tensor
@@ -144,9 +145,9 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int):
     ax_enh.clear()
     return (
         gradio.make_waveform(noisy_fn, bar_count=200),
-        spec_figure(sample, sr=sr, figure=fig_noisy, ax=ax_noisy),
+        spec_im(sample, sr=sr, figure=fig_noisy, ax=ax_noisy),
         gradio.make_waveform(enhanced_fn, bar_count=200),
-        spec_figure(enhanced, sr=sr, figure=fig_enh, ax=ax_enh),
+        spec_im(enhanced, sr=sr, figure=fig_enh, ax=ax_enh),
     )
 
 
@@ -208,16 +209,15 @@ def specshow(
     return im
 
 
-def spec_figure(
+def spec_im(
     audio: torch.Tensor,
     figsize=(15, 5),
     colorbar=False,
     colorbar_format=None,
     figure=None,
-    return_im=False,
     labels=True,
     **kwargs,
-) -> plt.Figure:
+) -> Image:
     audio = torch.as_tensor(audio)
     if labels:
         kwargs.setdefault("xlabel", "Time [s]")
@@ -244,17 +244,11 @@ def spec_figure(
                     colorbar_format = "%+2.0f dB"
             ckwargs = {"ax": kwargs["ax"]}
         plt.colorbar(im, format=colorbar_format, **ckwargs)
-    if return_im:
-        return im
-    return figure
+    figure.canvas.draw()
+    return Image.frombytes("RGB", figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
 
 
 inputs = [
-    # gradio.inputs.Audio(
-    #     label="Record your own voice",
-    #     source="microphone",
-    #     type="numpy",
-    # ),
     gradio.Audio(
         label="Upload audio sample",
         source="upload",
@@ -273,11 +267,9 @@ inputs = [
 ]
 outputs = [
     gradio.Video(type="filepath", label="Noisy audio"),
-    # gradio.Audio(type="filepath", label="Noisy audio"),
-    gradio.Plot(label="Noisy spectrogram"),
+    gradio.Image(label="Noisy spectrogram"),
     gradio.Video(type="filepath", label="Noisy audio"),
-    # gradio.Audio(type="filepath", label="Enhanced audio"),
-    gradio.Plot(label="Enhanced spectrogram"),
+    gradio.Image(label="Enhanced spectrogram"),
 ]
 description = "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
 iface = gradio.Interface(
