@@ -147,7 +147,7 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int):
     enh_im = spec_im(enhanced, sr=sr, figure=fig_enh, ax=ax_enh)
     noisy_wav = gradio.make_waveform(noisy_fn, bar_count=200)
     enh_wav = gradio.make_waveform(enhanced_fn, bar_count=200)
-    return noisy_wav, noisy_im, enh_wav, enh_im
+    return noisy_im, noisy_wav, enh_im, enh_wav
 
 
 def specshow(
@@ -265,10 +265,10 @@ inputs = [
     ),
 ]
 outputs = [
-    gradio.Video(type="filepath", label="Noisy audio"),
     gradio.Image(label="Noisy spectrogram"),
     gradio.Video(type="filepath", label="Noisy audio"),
     gradio.Image(label="Enhanced spectrogram"),
+    gradio.Video(type="filepath", label="Enhanced audio"),
 ]
 description = "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
 iface = gradio.Interface(
