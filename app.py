@@ -8,9 +8,9 @@ import gradio.outputs
 import markdown
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
 import torch
 from loguru import logger
+from PIL import Image
 from torch import Tensor
 from torchaudio.backend.common import AudioMetaData
 
@@ -143,12 +143,11 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int):
     logger.info(f"saved audios: {noisy_fn}, {enhanced_fn}")
     ax_noisy.clear()
     ax_enh.clear()
-    return (
-        gradio.make_waveform(noisy_fn, bar_count=200),
-        spec_im(sample, sr=sr, figure=fig_noisy, ax=ax_noisy),
-        gradio.make_waveform(enhanced_fn, bar_count=200),
-        spec_im(enhanced, sr=sr, figure=fig_enh, ax=ax_enh),
-    )
+    noisy_im = spec_im(sample, sr=sr, figure=fig_noisy, ax=ax_noisy)
+    enh_im = spec_im(enhanced, sr=sr, figure=fig_enh, ax=ax_enh)
+    noisy_wav = gradio.make_waveform(noisy_fn, bar_count=200)
+    enh_wav = gradio.make_waveform(enhanced_fn, bar_count=200)
+    return noisy_wav, noisy_im, enh_wav, enh_im
 
 
 def specshow(
