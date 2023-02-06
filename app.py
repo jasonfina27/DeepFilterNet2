@@ -25,9 +25,9 @@ fig_noisy: plt.Figure
 fig_enh: plt.Figure
 ax_noisy: plt.Axes
 ax_enh: plt.Axes
-fig_noisy, ax_noisy = plt.subplots(figsize=(15.2, 5))
+fig_noisy, ax_noisy = plt.subplots(figsize=(15.2, 4))
 fig_noisy.set_tight_layout(True)
-fig_enh, ax_enh = plt.subplots(figsize=(15.2, 5))
+fig_enh, ax_enh = plt.subplots(figsize=(15.2, 4))
 fig_enh.set_tight_layout(True)
 
 NOISES = {
@@ -143,9 +143,9 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int):
     ax_noisy.clear()
     ax_enh.clear()
     return (
-        noisy_fn,
+        gradio.make_waveform(noisy_fn, bar_count=200),
         spec_figure(sample, sr=sr, figure=fig_noisy, ax=ax_noisy),
-        enhanced_fn,
+        gradio.make_waveform(enhanced_fn, bar_count=200),
         spec_figure(enhanced, sr=sr, figure=fig_enh, ax=ax_enh),
     )
 
@@ -255,26 +255,28 @@ inputs = [
     #     source="microphone",
     #     type="numpy",
     # ),
-    gradio.inputs.Audio(
+    gradio.Audio(
         label="Upload audio sample",
         source="upload",
         type="filepath",
     ),
-    gradio.inputs.Dropdown(
+    gradio.Dropdown(
         label="Add background noise",
         choices=list(NOISES.keys()),
-        default="None",
+        value="None",
     ),
-    gradio.inputs.Dropdown(
+    gradio.Dropdown(
         label="Noise Level (SNR)",
         choices=["-5", "0", "10", "20"],
-        default="10",
+        value="10",
     ),
 ]
 outputs = [
-    gradio.Audio(type="filepath", label="Noisy audio"),
+    gradio.Video(type="filepath", label="Noisy audio"),
+    # gradio.Audio(type="filepath", label="Noisy audio"),
     gradio.Plot(label="Noisy spectrogram"),
-    gradio.Audio(type="filepath", label="Enhanced audio"),
+    gradio.Video(type="filepath", label="Noisy audio"),
+    # gradio.Audio(type="filepath", label="Enhanced audio"),
     gradio.Plot(label="Enhanced spectrogram"),
 ]
 description = "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
