@@ -137,10 +137,10 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int):
         sample = resample(sample, sr, meta.sample_rate)
         sr = meta.sample_rate
     noisy_wav = tempfile.NamedTemporaryFile(suffix="noisy.wav", delete=False).name
-    save_audio(noisy_fn, sample, sr)
+    save_audio(noisy_wav, sample, sr)
     enhanced_wav = tempfile.NamedTemporaryFile(suffix="enhanced.wav", delete=False).name
-    save_audio(enhanced_fn, enhanced, sr)
-    logger.info(f"saved audios: {noisy_fn}, {enhanced_fn}")
+    save_audio(enhanced_wav, enhanced, sr)
+    logger.info(f"saved audios: {noisy_wav}, {enhanced_wav}")
     ax_noisy.clear()
     ax_enh.clear()
     noisy_im = spec_im(sample, sr=sr, figure=fig_noisy, ax=ax_noisy)
