@@ -1,10 +1,7 @@
 import math
 import tempfile
 from typing import Optional, Tuple, Union
-
-import gradio
-import gradio.inputs
-import gradio.outputs
+import gradio as gr
 import markdown
 import matplotlib.pyplot as plt
 import numpy as np
@@ -100,7 +97,9 @@ def load_audio_gradio(
     return audio, meta
 
 
-def demo_fn(speech_upl: str, noise_type: str, snr: int):
+def demo_fn(speech_upl: str, noise_type: str, snr: int, mic_input: str):
+    if (mic_input):
+        speech_upl = mic_input
     sr = config("sr", 48000, int, section="df")
     logger.info(f"Got parameters speech_upl: {speech_upl}, noise: {noise_type}, snr: {snr}")
     snr = int(snr)
@@ -145,8 +144,8 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int):
     ax_enh.clear()
     noisy_im = spec_im(sample, sr=sr, figure=fig_noisy, ax=ax_noisy)
     enh_im = spec_im(enhanced, sr=sr, figure=fig_enh, ax=ax_enh)
-    # noisy_wav = gradio.make_waveform(noisy_fn, bar_count=200)
-    # enh_wav = gradio.make_waveform(enhanced_fn, bar_count=200)
+    # noisy_wav = gr.make_waveform(noisy_fn, bar_count=200)
+    # enh_wav = gr.make_waveform(enhanced_fn, bar_count=200)
     return noisy_wav, noisy_im, enhanced_wav, enh_im
 
 
@@ -247,39 +246,57 @@ def spec_im(
     return Image.frombytes("RGB", figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
 
 
-inputs = [
-    gradio.Audio(
-        label="Upload audio sample",
-        source="upload",
-        type="filepath",
-    ),
-    gradio.Dropdown(
-        label="Add background noise",
-        choices=list(NOISES.keys()),
-        value="None",
-    ),
-    gradio.Dropdown(
-        label="Noise Level (SNR)",
-        choices=["-5", "0", "10", "20"],
-        value="10",
-    ),
-]
-outputs = [
-    # gradio.Video(type="filepath", label="Noisy audio"),
-    gradio.Audio(type="filepath", label="Noisy audio"),
-    gradio.Image(label="Noisy spectrogram"),
-    # gradio.Video(type="filepath", label="Enhanced audio"),
-    gradio.Audio(type="filepath", label="Enhanced audio"),
-    gradio.Image(label="Enhanced spectrogram"),
-]
-description = "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
-iface = gradio.Interface(
-    fn=demo_fn,
-    title="DeepFilterNet2 Demo",
-    inputs=inputs,
-    outputs=outputs,
-    description=description,
-    allow_flagging="never",
-    article=markdown.markdown(open("usage.md").read()),
-)
-iface.launch(debug=True)
+def toggle(choice):
+    if choice == "mic":
+        return gr.update(visible=True, value=None), gr.update(visible=False, value=None)
+    else:
+        return gr.update(visible=False, value=None), gr.update(visible=True, value=None)
+
+
+with gr.Blocks() as demo:
+    with gr.Row():
+        gr.Markdown("## DeepFilterNet2 Demo")
+        gr.Markdown("This demo denoises audio files using DeepFilterNet. Try it with your own voice!")
+    with gr.Row():
+        with gr.Column():
+            radio = gr.Radio(["mic", "file"], value="file",
+                             label="How would you like to upload your audio?")
+            mic_input = gr.Mic(label="Input", type="filepath", visible=False)
+            audio_file = gr.Audio(
+                type="filepath", label="Input", visible=True)
+            inputs = [
+                audio_file,
+                gr.Dropdown(
+                    label="Add background noise",
+                    choices=list(NOISES.keys()),
+                    value="None",
+                ),
+                gr.Dropdown(
+                    label="Noise Level (SNR)",
+                    choices=["-5", "0", "10", "20"],
+                    value="10",
+                ),
+                mic_input
+            ]
+            btn = gr.Button("Generate")
+        with gr.Column():
+            outputs = [
+                # gr.Video(type="filepath", label="Noisy audio"),
+                gr.Audio(type="filepath", label="Noisy audio"),
+                gr.Image(label="Noisy spectrogram"),
+                # gr.Video(type="filepath", label="Enhanced audio"),
+                gr.Audio(type="filepath", label="Enhanced audio"),
+                gr.Image(label="Enhanced spectrogram"),
+            ]
+    btn.click(fn=demo_fn, inputs=inputs, outputs=outputs)
+    radio.change(toggle, radio, [mic_input, audio_file])
+    gr.Examples([
+                ["./samples/p232_013_clean.wav", "Kitchen", "10"],
+                ["./samples/p232_013_clean.wav", "Cafe", "10"],
+                ["./samples/p232_019_clean.wav", "Cafe", "10"],
+                ["./samples/p232_019_clean.wav", "River", "10"]],
+                fn=demo_fn, inputs=inputs, outputs=outputs, cache_examples=True),
+    gr.Markdown(open("usage.md").read())
+
+
+demo.launch(enable_queue=True)
