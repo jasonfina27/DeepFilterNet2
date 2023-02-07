@@ -1,8 +1,8 @@
 import math
 import tempfile
 from typing import Optional, Tuple, Union
+
 import gradio as gr
-import markdown
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -98,7 +98,7 @@ def load_audio_gradio(
 
 
 def demo_fn(speech_upl: str, noise_type: str, snr: int, mic_input: str):
-    if (mic_input):
+    if mic_input:
         speech_upl = mic_input
     sr = config("sr", 48000, int, section="df")
     logger.info(f"Got parameters speech_upl: {speech_upl}, noise: {noise_type}, snr: {snr}")
@@ -256,14 +256,16 @@ def toggle(choice):
 with gr.Blocks() as demo:
     with gr.Row():
         gr.Markdown("## DeepFilterNet2 Demo")
-        gr.Markdown("This demo denoises audio files using DeepFilterNet. Try it with your own voice!")
+        gr.Markdown(
+            "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
+        )
     with gr.Row():
         with gr.Column():
-            radio = gr.Radio(["mic", "file"], value="file",
-                             label="How would you like to upload your audio?")
+            radio = gr.Radio(
+                ["mic", "file"], value="file", label="How would you like to upload your audio?"
+            )
             mic_input = gr.Mic(label="Input", type="filepath", visible=False)
-            audio_file = gr.Audio(
-                type="filepath", label="Input", visible=True)
+            audio_file = gr.Audio(type="filepath", label="Input", visible=True)
             inputs = [
                 audio_file,
                 gr.Dropdown(
@@ -276,7 +278,7 @@ with gr.Blocks() as demo:
                     choices=["-5", "0", "10", "20"],
                     value="10",
                 ),
-                mic_input
+                mic_input,
             ]
             btn = gr.Button("Generate")
         with gr.Column():
@@ -290,12 +292,18 @@ with gr.Blocks() as demo:
             ]
     btn.click(fn=demo_fn, inputs=inputs, outputs=outputs)
     radio.change(toggle, radio, [mic_input, audio_file])
-    gr.Examples([
-                ["./samples/p232_013_clean.wav", "Kitchen", "10"],
-                ["./samples/p232_013_clean.wav", "Cafe", "10"],
-                ["./samples/p232_019_clean.wav", "Cafe", "10"],
-                ["./samples/p232_019_clean.wav", "River", "10"]],
-                fn=demo_fn, inputs=inputs, outputs=outputs, cache_examples=True),
+    gr.Examples(
+        [
+            ["./samples/p232_013_clean.wav", "Kitchen", "10"],
+            ["./samples/p232_013_clean.wav", "Cafe", "10"],
+            ["./samples/p232_019_clean.wav", "Cafe", "10"],
+            ["./samples/p232_019_clean.wav", "River", "10"],
+        ],
+        fn=demo_fn,
+        inputs=inputs,
+        outputs=outputs,
+        cache_examples=True,
+    ),
     gr.Markdown(open("usage.md").read())
 
 

@@ -5,6 +5,7 @@
 out/
 export/
 DeepFilterNet/poetry.lock
+gradio_cached_examples/
 
 ### Rust gitignore ###
 
