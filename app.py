@@ -255,9 +255,12 @@ def toggle(choice):
 
 with gr.Blocks() as demo:
     with gr.Row():
-        gr.Markdown("## DeepFilterNet2 Demo")
         gr.Markdown(
-            "This demo denoises audio files using DeepFilterNet. Try it with your own voice!"
+            """
+            ## DeepFilterNet2 Demo\
+
+            This demo denoises audio files using DeepFilterNet. Try it with your own voice!
+            """
         )
     with gr.Row():
         with gr.Column():
