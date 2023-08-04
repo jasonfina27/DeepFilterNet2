@@ -105,7 +105,7 @@ def demo_fn(speech_upl: str, noise_type: str, snr: int, mic_input: str):
     snr = int(snr)
     noise_fn = NOISES[noise_type]
     meta = AudioMetaData(-1, -1, -1, -1, "")
-    max_s = 10  # limit to 10 seconds
+    max_s = 1000000000  # limit to 10 seconds
     if speech_upl is not None:
         sample, meta = load_audio(speech_upl, sr)
         max_len = max_s * sr
@@ -310,4 +310,4 @@ with gr.Blocks() as demo:
     gr.Markdown(open("usage.md").read())
 
 
-demo.launch(enable_queue=True)
+demo.launch(enable_queue=True, share=True)
